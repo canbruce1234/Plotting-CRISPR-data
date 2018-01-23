@@ -35,6 +35,8 @@ A <- ggplot(ceres_cell_line_info,
 plot(A)
 ```
 <br>
+(in Github, to visualize the HTML doc (and this graph), prepend http://htmlpreview.github.com/? to its URL)
+
 To plot all 16,000 plots, the following loop was used. Each plot was saved as a PDF inside a folder named 'allplots'. An HTML page was created to list all the gene names, hyperlinked to their plot. 
 
 (The following code is not evaluated, to save time generating this listing.)
