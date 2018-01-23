@@ -10,9 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Data
 Data was downloaded from https://portals.broadinstitute.org/achilles/datasets/19/download , files cell_line_info.tsv and ceres_gene_effects.csv:
 ```{r read_data}
-ceres_gene_effects <- read.table('CERES input/ceres_gene_effects.csv',
+ceres_gene_effects <- read.table('CERESinput/ceres_gene_effects.csv',
                                  as.is=T,header=TRUE,row.names=1,sep=",")
-cell_line_info <- read.table('CERES input/cell_line_info.tsv',
+cell_line_info <- read.table('CERESinput/cell_line_info.tsv',
                               as.is=T,header=TRUE,row.names=1,sep="\t")
 ceres_transposed <-as.matrix(t(ceres_gene_effects))
 ceres_cell_line_info <- merge(cell_line_info,ceres_transposed,by="row.names")
@@ -35,7 +35,8 @@ A <- ggplot(ceres_cell_line_info,
 plot(A)
 ```
 <br>
-(in Github, to visualize the HTML doc (and this graph), prepend http://htmlpreview.github.com/? to its URL)
+(in Github, to visualize the HTML doc (and the above graph), prepend  "http://htmlpreview.github.com/?" to its URL)
+<br>
 
 To plot all 16,000 plots, the following loop was used. Each plot was saved as a PDF inside a folder named 'allplots'. An HTML page was created to list all the gene names, hyperlinked to their plot. 
 
