@@ -1,0 +1,34 @@
+---
+title: "CERES data plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data
+Data was downloaded from https://portals.broadinstitute.org/achilles/datasets/19/download , files cell_line_info.tsv and ceres_gene_effects.csv:
+```{r reading}
+ceres_gene_effects <- read.table('CERES input/ceres_gene_effects.csv',
+                                 as.is=T,header=TRUE,row.names=1,sep=",")
+cell_line_info <- read.table('CERES input/cell_line_info.tsv',
+                              as.is=T,header=TRUE,row.names=1,sep="\t")
+ceres_transposed <-as.matrix(t(ceres_gene_effects))
+ceres_cell_line_info <- merge(cell_line_info,ceres_transposed,by="row.names")
+```
+Note that the data is missing all X chromosome genes.
+
+This is the code to plot data for one gene:
+```{r plotting}
+ceres_cell_line_info[10]
+library(ggplot2)
+A <- ggplot(ceres_cell_line_info,
+            aes(y=Lineage,x= eval(parse(text = colnames(ceres_cell_line_info[10]))), color=Lineage)) +
+            xlim(c(-2.0,1.0)) + 
+            geom_point(shape=16 , size = 2) + 
+            geom_hline(yintercept = 0,color = "grey", size=0.5) + 
+            theme(legend.position="none") +
+            theme(plot.margin = unit(c(2,2,2,2), "cm"))
+plot(A)
+```

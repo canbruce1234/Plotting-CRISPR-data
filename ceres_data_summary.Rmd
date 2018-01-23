@@ -1,0 +1,79 @@
+---
+title: "CERES data plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data
+Data was downloaded from https://portals.broadinstitute.org/achilles/datasets/19/download , files cell_line_info.tsv and ceres_gene_effects.csv:
+```{r read_data}
+ceres_gene_effects <- read.table('CERES input/ceres_gene_effects.csv',
+                                 as.is=T,header=TRUE,row.names=1,sep=",")
+cell_line_info <- read.table('CERES input/cell_line_info.tsv',
+                              as.is=T,header=TRUE,row.names=1,sep="\t")
+ceres_transposed <-as.matrix(t(ceres_gene_effects))
+ceres_cell_line_info <- merge(cell_line_info,ceres_transposed,by="row.names")
+```
+Note that the data is missing all X chromosome genes.
+
+This is the code to plot data for one gene (i=1):
+```{r plot_one}
+library(ggplot2)
+i=1
+A <- ggplot(ceres_cell_line_info,
+            aes(y=Lineage,x= eval(parse(text = colnames(ceres_cell_line_info[9+i]))), color=Lineage)) +
+            xlim(c(-2.0,1.0)) + 
+            labs(x="log(Fold-change)") +
+            labs(title = colnames(ceres_cell_line_info)[9+i]) +
+            geom_point(shape=16 , size = 2) + 
+            geom_hline(yintercept = 0,color = "grey", size=0.5) + 
+            theme(legend.position="none") +
+            theme(plot.margin = unit(c(2,2,2,2), "cm"))
+plot(A)
+```
+<br>
+To plot all 16,000 plots, the following loop was used. Each plot was saved as a PDF inside a folder named 'allplots'. An HTML page was created to list all the gene names, hyperlinked to their plot. 
+
+(The following code is not evaluated, to save time generating this listing.)
+```{r, eval=FALSE}
+# Dashes in column names created a problem later, when running the 'eval' function. 
+# I substituted dash with period in the column names;
+myfunc <- function(x) sub('-','.',x)
+mycolnames2 <- sapply(mycolnames, myfunc)
+colnames(ceres_cell_line_info) <- mycolnames2
+
+path <- 'allplots'
+for(i in (9+i):dim(ceres_cell_line_info)[2]){
+   file <- paste0(path,colnames(ceres_cell_line_info)[i],".pdf")
+   pdf(file)
+   A <- ggplot(ceres_cell_line_info,
+               aes(y=Lineage,x= eval(parse(text = colnames(ceres_cell_line_info[9+i]))), color=Lineage)) +
+               xlab(colnames(ceres_cell_line_info)[9+i]) + xlim(c(-2.0,1.0)) + geom_point(shape=16 , size = 2) +
+               geom_hline(yintercept = 0,color = "grey", size=0.5 ) + theme(legend.position="none") + 
+               theme(plot.margin = unit(c(2,2,2,2), "cm"))
+   plot(A)
+   dev.off()
+   print(paste0('processing #',i, ': ',colnames(ceres_cell_line_info[9+i]), '...'))
+}
+```
+Here is the code to generate the HTML page, 'ceresdata.html', which has links to the plots. Again, the code is not evaluated, to save time.
+```{r, eval=FALSE}
+htmltop <- paste0('<html>\t','<head>','</head>\t','<body>\t')
+
+htmltext <- 'The following genes are part of the Achilles CRISPR dataset, version Avana-17Q2-Broad_v2. This dataset does not include X chromosome genes.\n\n Click on the name of a gene to display the scores for that gene, grouped by cell line.\n'
+
+for(i in (9+i):dim(ceres_cell_line_info)[2]) {
+  gene=colnames(ceres_cell_line_info[9+i])
+  link <- paste0('<a href="allplots/',gene,'.pdf">',gene,"</a>, ")
+  htmltext <- paste0(htmltext,link)
+}
+
+htmlbottom <- paste0('</body>\t','</html>')
+
+htmlpage <- paste0(htmltop, htmltext, '\t', htmlbottom)
+
+write(htmlpage,'d:/users/can/documents/ceresdata.html')
+```
